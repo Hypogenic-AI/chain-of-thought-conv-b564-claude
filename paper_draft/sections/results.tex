@@ -1,0 +1,100 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Cross-Model Convergence: CoT Dramatically Increases Similarity}
+\label{sec:cross_model}
+
+Our main finding is that CoT substantially increases the similarity of outputs across different model families. \Tabref{tab:cross_model} reports cross-model PCS for each task type under direct and CoT conditions.
+
+\begin{table}[t]
+    \centering
+    \begin{tabular}{@{}lcccc@{}}
+        \toprule
+        \textbf{Category} & \textbf{Direct} & \textbf{CoT} & \textbf{$p$-value} & \textbf{Cohen's $d$} \\
+        \midrule
+        Overall & 0.634 {\scriptsize $\pm$ 0.213} & \textbf{0.832} {\scriptsize $\pm$ 0.080} & $<$0.00001 & \textbf{+0.93} \\
+        Reasoning & 0.654 {\scriptsize $\pm$ 0.188} & \textbf{0.886} {\scriptsize $\pm$ 0.042} & 0.002 & \textbf{+1.19} \\
+        Creative & 0.652 {\scriptsize $\pm$ 0.232} & \textbf{0.824} {\scriptsize $\pm$ 0.052} & 0.018 & \textbf{+0.76} \\
+        Opinion & 0.595 {\scriptsize $\pm$ 0.212} & \textbf{0.783} {\scriptsize $\pm$ 0.097} & 0.008 & \textbf{+0.90} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cross-model pairwise cosine similarity (PCS) under direct and CoT prompting. CoT increases cross-model similarity across all task types, with effect sizes ranging from large ($d = 0.76$) to very large ($d = 1.19$). Higher values indicate greater convergence. Best results (higher convergence) in \textbf{bold}.}
+    \label{tab:cross_model}
+\end{table}
+
+Across all 46 questions, CoT raises average cross-model PCS from 0.634 to 0.832---a 31\% relative increase. The effect is highly significant ($p < 0.00001$) with a large effect size ($d = 0.93$). \Figref{fig:cross_model} illustrates this pattern: under direct prompting, cross-model similarity varies widely across questions, while under CoT, it is consistently high and tightly clustered.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/cross_model_convergence.png}
+    \caption{Cross-model pairwise cosine similarity under direct and CoT prompting, broken down by task type. CoT consistently increases cross-model convergence, with the tightest clustering for reasoning tasks. Box plots show median, interquartile range, and outliers.}
+    \label{fig:cross_model}
+\end{figure}
+
+The effect is strongest for reasoning tasks ($d = 1.19$), where CoT raises cross-model PCS from 0.654 to 0.886. This is consistent with the hypothesis that step-by-step reasoning activates shared algorithmic patterns learned from overlapping training data. Creative tasks show the smallest (but still large) effect ($d = 0.76$), while opinion tasks fall in between ($d = 0.90$).
+
+\subsection{Within-Model Convergence: CoT Does Not Increase Repetitiveness}
+\label{sec:within_model}
+
+In contrast to the dramatic cross-model effect, CoT has virtually no effect on within-model convergence. \Tabref{tab:within_model} shows that individual models produce responses of similar diversity with and without CoT.
+
+\begin{table}[t]
+    \centering
+    \begin{tabular}{@{}lcccc@{}}
+        \toprule
+        \textbf{Category} & \textbf{Direct} & \textbf{CoT} & \textbf{$p$-value} & \textbf{Cohen's $d$} \\
+        \midrule
+        Overall & 0.871 {\scriptsize $\pm$ 0.195} & 0.857 {\scriptsize $\pm$ 0.099} & 0.003 & $-$0.074 \\
+        Reasoning & 0.909 {\scriptsize $\pm$ 0.150} & 0.908 {\scriptsize $\pm$ 0.043} & 0.083 & $-$0.004 \\
+        Creative & 0.844 {\scriptsize $\pm$ 0.230} & 0.851 {\scriptsize $\pm$ 0.109} & 0.397 & +0.028 \\
+        Opinion & 0.859 {\scriptsize $\pm$ 0.193} & 0.807 {\scriptsize $\pm$ 0.106} & 0.013 & $-$0.268 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Within-model pairwise cosine similarity under direct and CoT prompting. CoT does not meaningfully change within-model similarity overall ($d = -0.074$). For opinion tasks, CoT actually \emph{decreases} within-model similarity ($d = -0.27$, $p = 0.013$).}
+    \label{tab:within_model}
+\end{table}
+
+Overall within-model PCS is nearly identical between conditions (0.871 vs.\ 0.857, $d = -0.074$). The small statistically significant $p$-value ($p = 0.003$) reflects the large sample size rather than a meaningful effect---the Cohen's $d$ is negligible. For reasoning and creative tasks, the effect is essentially zero ($d = -0.004$ and $d = +0.028$, respectively). The only notable within-model change is for opinion tasks, where CoT actually \emph{reduces} within-model similarity ($d = -0.27$, $p = 0.013$), suggesting that step-by-step reasoning causes models to explore different perspectives across samples.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/within_model_convergence.png}
+    \caption{Within-model pairwise cosine similarity under direct and CoT prompting. Unlike the cross-model case (\figref{fig:cross_model}), within-model similarity remains stable across conditions, confirming that CoT does not make individual models more repetitive.}
+    \label{fig:within_model}
+\end{figure}
+
+\Figref{fig:within_model} confirms this pattern visually. The within-model distributions are largely overlapping between conditions, in stark contrast to the cross-model distributions in \figref{fig:cross_model}.
+
+\subsection{The Asymmetry: Cross-Model vs.\ Within-Model Effects}
+\label{sec:asymmetry}
+
+\Figref{fig:effect_sizes} summarizes the effect sizes across all conditions, highlighting the core asymmetry. Cross-model Cohen's $d$ values are large and positive (0.76--1.19), while within-model values hover near zero ($-$0.27 to +0.03). This asymmetry is the central finding of our study: CoT is a \emph{cross-model} homogenizer but not a \emph{within-model} homogenizer.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/effect_sizes_summary.png}
+    \caption{Cohen's $d$ effect sizes for the impact of CoT on convergence. Cross-model effects (positive, right side) are consistently large, while within-model effects (near zero or slightly negative) are negligible. The dashed lines at $\pm 0.8$ mark the conventional threshold for a ``large'' effect.}
+    \label{fig:effect_sizes}
+\end{figure}
+
+\subsection{Answer Agreement vs.\ Semantic Similarity}
+\label{sec:answer_agreement}
+
+For the BBH reasoning tasks that have ground-truth answers, we observe a surprising dissociation. CoT \emph{decreases} answer agreement across models (from 44.8\% to 22.9\%, $p = 0.029$) despite dramatically increasing semantic similarity. Models under CoT produce reasoning chains that look very similar in structure, vocabulary, and approach---yet these chains sometimes lead to different final answers. This pattern is consistent with the literature on unfaithful CoT~\citep{turpin2023language}: the reasoning traces converge on shared templates while the underlying computation may diverge.
+
+\subsection{Lexical Diversity}
+\label{sec:lexical}
+
+CoT significantly reduces Distinct-1 (unique unigrams: 0.490 $\to$ 0.380, $p < 0.0001$) but increases Distinct-2 (unique bigrams: 0.348 $\to$ 0.681, $p < 0.0001$). The decrease in Distinct-1 reflects convergence on shared vocabulary (\eg ``Step 1,'', ``Let's consider''), while the increase in Distinct-2 reflects the greater length and elaboration of CoT responses, which naturally produce more unique bigram combinations.
+
+\subsection{Model-Level Patterns}
+\label{sec:model_patterns}
+
+\Figref{fig:heatmap} shows the pairwise similarity between all model pairs under both conditions. Under direct prompting, model pairs show moderate and variable similarity (0.55--0.72). Under CoT, all model pairs converge to high similarity (0.78--0.90), with the spread between the most-similar and least-similar pairs shrinking substantially. No single model pair drives the effect---the convergence is consistent across all six pairwise comparisons.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/model_similarity_heatmap.png}
+    \caption{Pairwise similarity heatmap between all model pairs under direct (left) and CoT (right) prompting. Under CoT, all model pairs converge to high similarity, with reduced variance across pairs. The convergence is not driven by any single model pair.}
+    \label{fig:heatmap}
+\end{figure}

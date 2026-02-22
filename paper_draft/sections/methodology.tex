@@ -1,0 +1,76 @@
+\section{Methodology}
+\label{sec:methodology}
+
+We design a controlled experiment to isolate the effect of CoT prompting on output convergence. The core idea is simple: prompt the same set of questions to multiple LLMs with and without CoT, then measure how similar the resulting outputs are both within and across models.
+
+\subsection{Models}
+\label{sec:models}
+
+We select four models from different families to ensure that any observed convergence reflects cross-architecture patterns rather than within-family similarity:
+
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item \gptfour (OpenAI) --- accessed via the OpenAI API
+    \item \claude (Anthropic) --- accessed via OpenRouter
+    \item \gemini (Google) --- accessed via OpenRouter
+    \item \llama (Meta) --- accessed via OpenRouter
+\end{itemize}
+
+These models span the four major LLM families, differ in architecture and training procedures, and represent a mix of proprietary and open-weight systems.
+
+\subsection{Datasets}
+\label{sec:datasets}
+
+We sample questions from three established benchmarks spanning different task types to test whether CoT's effect on convergence varies with the nature of the task:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{@{}llcl@{}}
+        \toprule
+        \textbf{Dataset} & \textbf{Task Type} & \textbf{Questions} & \textbf{Source} \\
+        \midrule
+        \textsc{BBH} & Reasoning & 16 & \citet{suzgun2023challenging} \\
+        \textsc{NoveltyBench} & Creative & 15 & \citet{xu2026language} \\
+        \textsc{WVS} & Opinion & 15 & \citet{xu2026language} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Datasets used in our study. We sample 46 total questions across three task types to cover reasoning, creative, and opinion domains.}
+    \label{tab:datasets}
+\end{table}
+
+\para{Reasoning (\bbh).} We sample 16 questions from BIG-Bench Hard~\citep{suzgun2023challenging}, drawing two questions each from eight diverse tasks: date understanding, causal judgement, disambiguation QA, logical deduction, navigation, reasoning about colored objects, sports understanding, and web of lies. These tasks have ground-truth answers, allowing us to also measure answer agreement.
+
+\para{Creative (\novbench).} We use 15 questions from NoveltyBench~\citep{xu2026language}, which contains open-ended creative prompts such as ``Write a short love poem with 4 lines.'' These tasks have no single correct answer, and diversity is inherently valuable.
+
+\para{Opinion (\wvs).} We use 15 questions from the World Values Survey~\citep{xu2026language}, which ask about values and preferences (\eg ``How important is family in your life?'') with fixed response options. These test whether CoT homogenizes value expression across models.
+
+\subsection{Experimental Design}
+\label{sec:design}
+
+\para{Conditions.} We compare two prompting conditions:
+
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item \textbf{Direct:} System prompt instructs the model to ``Answer the question directly and concisely. Do not explain your reasoning.'' User prompt ends with ``Answer directly and concisely.''
+    \item \textbf{CoT:} System prompt instructs the model to ``Answer the question by thinking step by step. Show your reasoning before giving your final answer.'' User prompt ends with ``Let's think step by step.''
+\end{itemize}
+
+\para{Sampling.} For each (model, condition, question) triple, we generate 3 responses at temperature 0.7 with a maximum of 400 tokens. Temperature 0.7 is standard for diversity measurement---low enough to produce coherent outputs, high enough to reveal meaningful variation. This yields $46 \times 4 \times 2 \times 3 = 1{,}104$ total API calls, all of which completed successfully.
+
+\subsection{Metrics}
+\label{sec:metrics}
+
+\para{Pairwise Cosine Similarity (PCS).} Our primary metric. We embed all responses using \textsc{all-MiniLM-L6-v2}~\citep{reimers2019sentencebert}, a widely used sentence embedding model that produces 384-dimensional L2-normalized vectors. For a set of $n$ responses, we compute the average cosine similarity over all $\binom{n}{2}$ pairs. Higher PCS indicates greater convergence.
+
+We compute PCS at two levels:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item \textbf{Within-model PCS:} Average pairwise similarity among the 3 responses from the same model, same condition, same question. Measures how repetitive a single model is.
+    \item \textbf{Cross-model PCS:} Average pairwise similarity among responses from \emph{different} models, same condition, same question. Measures how similar different models are to each other.
+\end{itemize}
+
+\para{Answer Agreement Rate (AAR).} For BBH reasoning tasks with ground-truth answers, we measure the fraction of cross-model response pairs that produce the same final answer.
+
+\para{Lexical diversity.} We compute Distinct-1 (ratio of unique unigrams to total unigrams) and Distinct-2 (ratio of unique bigrams to total bigrams) to measure surface-level lexical variation.
+
+\subsection{Statistical Analysis}
+\label{sec:stats}
+
+We use the Wilcoxon signed-rank test for all paired comparisons between conditions. This non-parametric test is appropriate because PCS values are bounded and may not be normally distributed. We report Cohen's $d$ as our primary effect size measure, using the conventional thresholds of 0.2 (small), 0.5 (medium), and 0.8 (large). All tests use a significance threshold of $\alpha = 0.05$. Each question serves as a paired observation---we compare the PCS for that question under direct prompting versus CoT prompting.

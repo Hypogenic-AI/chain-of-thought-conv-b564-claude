@@ -1,0 +1,455 @@
+[
+  {
+    "id": "bbh_date_understanding_163",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "date_understanding",
+    "question": "2015 is coming in 36 hours. What is the date 24 hours later in MM/DD/YYYY?\nOptions:\n(A) 01/09/2015\n(B) 12/30/2059\n(C) 12/30/2014\n(D) 01/01/2015\n(E) 01/04/2015\n(F) 12/31/2014",
+    "answer": "(C)"
+  },
+  {
+    "id": "bbh_date_understanding_28",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "date_understanding",
+    "question": "Yesterday was April 30, 2021. What is the date one week ago from today in MM/DD/YYYY?\nOptions:\n(A) 05/15/2021\n(B) 04/23/2021\n(C) 04/15/2021\n(D) 06/05/2021\n(E) 04/19/2021\n(F) 04/24/2021",
+    "answer": "(F)"
+  },
+  {
+    "id": "bbh_causal_judgement_6",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "causal_judgement",
+    "question": "How would a typical person answer each of the following questions about causation?\nThe CEO of a company is sitting in his office when his Vice President of R&D comes in and says, 'We are thinking of starting a new programme. It will help us increase profits, but it will also harm the environment.' The CEO responds that he doesn't care about harming the environment and just wants to make as much profit as possible. The programme is carried out, profits are made and the environment is harmed. Did the CEO intentionally harm the environment?\nOptions:\n- Yes\n- No",
+    "answer": "Yes"
+  },
+  {
+    "id": "bbh_causal_judgement_70",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "causal_judgement",
+    "question": "How would a typical person answer each of the following questions about causation?\nBilly and Suzy work for the same company. They work in different rooms, and both of them sometimes need to access the central computer of the company. Nobody at the company is aware that if two people are logged into the central computer at the same time, some spam emails containing dangerous viruses are immediately deleted from the central computer. In order to make sure that one person is always available to answer incoming phone calls, the company issued the following official policy: Suzy is the only one permitted to log into the central computer in the mornings, whereas Billy is the only one permitted to log into the central computer in the afternoons. Billy is not permitted to log into the central computer in the morning. Today at 9 am, Billy and Suzy both log into the central computer at the same time. Immediately, some work emails containing dangerous viruses are deleted from the central computer. Did Suzy cause the central computer to delete some work emails containing dangerous viruses?\nOptions:\n- Yes\n- No",
+    "answer": "No"
+  },
+  {
+    "id": "bbh_disambiguation_qa_62",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "disambiguation_qa",
+    "question": "In the following sentences, explain the antecedent of the pronoun (which thing the pronoun refers to), or state that it is ambiguous.\nSentence: The customer and the chef discuss her culinary training.\nOptions:\n(A) It is the customer's culinary training\n(B) It is the chef's culinary training\n(C) Ambiguous",
+    "answer": "(B)"
+  },
+  {
+    "id": "bbh_disambiguation_qa_57",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "disambiguation_qa",
+    "question": "In the following sentences, explain the antecedent of the pronoun (which thing the pronoun refers to), or state that it is ambiguous.\nSentence: The mechanic called to inform the customer that her car would be ready in the morning.\nOptions:\n(A) It was the mechanic's car\n(B) It was the customer's car\n(C) Ambiguous",
+    "answer": "(B)"
+  },
+  {
+    "id": "bbh_logical_deduction_five_objects_35",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "logical_deduction_five_objects",
+    "question": "The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph. On a shelf, there are five books: a green book, a blue book, a brown book, a gray book, and a red book. The green book is to the left of the brown book. The gray book is to the left of the blue book. The green book is to the right of the blue book. The red book is the leftmost.\nOptions:\n(A) The green book is the second from the left\n(B) The blue book is the second from the left\n(C) The brown book is the second from the left\n(D) The gray book is the second from the left\n(E) The red book is the second from the left",
+    "answer": "(D)"
+  },
+  {
+    "id": "bbh_logical_deduction_five_objects_188",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "logical_deduction_five_objects",
+    "question": "The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph. On a shelf, there are five books: a blue book, a purple book, a yellow book, a black book, and a green book. The purple book is the third from the left. The yellow book is to the left of the black book. The green book is to the left of the purple book. The blue book is to the left of the green book.\nOptions:\n(A) The blue book is the third from the left\n(B) The purple book is the third from the left\n(C) The yellow book is the third from the left\n(D) The black book is the third from the left\n(E) The green book is the third from the left",
+    "answer": "(B)"
+  },
+  {
+    "id": "bbh_navigate_26",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "navigate",
+    "question": "If you follow these instructions, do you return to the starting point? Take 10 steps. Turn around. Take 4 steps. Take 6 steps. Turn around.\nOptions:\n- Yes\n- No",
+    "answer": "Yes"
+  },
+  {
+    "id": "bbh_navigate_173",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "navigate",
+    "question": "If you follow these instructions, do you return to the starting point? Take 10 steps. Turn left. Turn around. Take 9 steps. Take 8 steps. Turn right. Turn around. Take 8 steps.\nOptions:\n- Yes\n- No",
+    "answer": "No"
+  },
+  {
+    "id": "bbh_reasoning_about_colored_objects_189",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "reasoning_about_colored_objects",
+    "question": "On the nightstand, there is a grey paperclip, a red cup, a gold bracelet, a blue necklace, a teal keychain, and a burgundy puzzle. Is the paperclip grey?\nOptions:\n(A) yes\n(B) no",
+    "answer": "(A)"
+  },
+  {
+    "id": "bbh_reasoning_about_colored_objects_228",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "reasoning_about_colored_objects",
+    "question": "On the desk, you see a bunch of items arranged in a row: a red cat toy, a teal mug, a yellow crayon, a fuchsia booklet, a green necklace, and a mauve plate. How many non-brown items do you see to the left of the necklace?\nOptions:\n(A) zero\n(B) one\n(C) two\n(D) three\n(E) four\n(F) five\n(G) six",
+    "answer": "(E)"
+  },
+  {
+    "id": "bbh_sports_understanding_139",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "sports_understanding",
+    "question": "Is the following sentence plausible? \"Ketel Marte got into the endzone.\"",
+    "answer": "no"
+  },
+  {
+    "id": "bbh_sports_understanding_22",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "sports_understanding",
+    "question": "Is the following sentence plausible? \"Adam Thielen got on base.\"",
+    "answer": "no"
+  },
+  {
+    "id": "bbh_web_of_lies_151",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "web_of_lies",
+    "question": "Question: Yoland tells the truth. Gwenn says Yoland tells the truth. Michaela says Gwenn lies. Jamey says Michaela tells the truth. Amberly says Jamey lies. Does Amberly tell the truth?",
+    "answer": "Yes"
+  },
+  {
+    "id": "bbh_web_of_lies_108",
+    "category": "reasoning",
+    "source": "bbh",
+    "task": "web_of_lies",
+    "question": "Question: Shaunda lies. Ryan says Shaunda tells the truth. Shalonda says Ryan lies. Bernita says Shalonda lies. Michaela says Bernita tells the truth. Does Michaela tell the truth?",
+    "answer": "No"
+  },
+  {
+    "id": "nb_curated-4",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Write a short love poem with 4 lines.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-3",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Write a haiku about a whale and a walnut tree.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-11",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Tell me a dad joke.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-27",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "I am buying a handbag for my mother. Name one handbag that I should buy. Just one.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-29",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Suggest a birthday gift for a friend's 25th birthday. Just one",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-64",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Can you list three cities worth visiting",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-77",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Name a star other than the Sun.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-71",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Name one person who won the the Fields Medal.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-25",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Name one person of Indian Origin.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-91",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Pick an emoji at random.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-83",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Who is a renowned writer from Nigeria?",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-89",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Pick a random valid US zip code.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-69",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "Name one wild animal which is an omnivore.",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-53",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "What is your most challenging type of problem to solve?",
+    "answer": null
+  },
+  {
+    "id": "nb_curated-28",
+    "category": "creative",
+    "source": "noveltybench",
+    "question": "What's the best car to get in 2023? Just give me one single suggestion. Otherwise I'll have decision paralysis.",
+    "answer": null
+  },
+  {
+    "id": "wvs_Q230",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "How often do rich people buy elections in this country's elections? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. Very often 2. Fairly often 3. Not often 4. Not at all",
+    "options": [
+      "Very often",
+      "Fairly often",
+      "Not often",
+      "Not at all"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q143",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "How worried are you about not being able to give your children a good education? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. Very much 2. A good deal 3. Not much 4. Not at all",
+    "options": [
+      "Very much",
+      "A good deal",
+      "Not much",
+      "Not at all"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q4",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "How important is politics in your life? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. Very important 2. Rather important 3. Not very important 4. Not at all important",
+    "options": [
+      "Very important",
+      "Rather important",
+      "Not very important",
+      "Not at all important"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q82",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "How much confidence do you have in regional organizations that aim to promote cooperation and integration among countries: a great deal, quite a lot, not very much, or none at all? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. A great deal 2. Quite a lot 3. Not very much 4. None at all",
+    "options": [
+      "A great deal",
+      "Quite a lot",
+      "Not very much",
+      "None at all"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q217",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "Have you done, might do, or would never do searching information about politics and political events online? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. Have done 2. Might do 3. Would never do",
+    "options": [
+      "Have done",
+      "Might do",
+      "Would never do"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q175",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "With which of the following statements do you agree most? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. The basic meaning of religion is to make sense of life after death 2. The basic meaning of religion is to make sense of life in this world",
+    "options": [
+      "The basic meaning of religion is to make sense of life after death",
+      "The basic meaning of religion is to make sense of life in this world"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q80",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "How much confidence do you have in women's organizations: a great deal, quite a lot, not very much, or none at all? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. A great deal 2. Quite a lot 3. Not very much 4. None at all",
+    "options": [
+      "A great deal",
+      "Quite a lot",
+      "Not very much",
+      "None at all"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q111",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "Which of these statements comes closer to your own point of view ? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. Protecting the environment should be given priority, even if it causes slower economic growth and some loss of jobs. 2. Economic growth and creating jobs should be the top priority, even if the environment suffers to some extent. 3. Other answer",
+    "options": [
+      "Protecting the environment should be given priority, even if it causes slower economic growth and some loss of jobs.",
+      "Economic growth and creating jobs should be the top priority, even if the environment suffers to some extent.",
+      "Other answer"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q173",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "Independently of whether you attend religious services or not, would you say you are a religious person, not a religious person, or an atheist? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. A religious person 2. Not a religious person 3. An atheist",
+    "options": [
+      "A religious person",
+      "Not a religious person",
+      "An atheist"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q53",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "In the last 12 months, how often have you or your family gone without medicine or medical treatment that you needed? Choose only one of the following options (e.g., 1, 2, 3, ...): 1. Often 2. Sometimes 3. Rarely 4. Never",
+    "options": [
+      "Often",
+      "Sometimes",
+      "Rarely",
+      "Never"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q48",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "Some people feel they have completely free choice and control over their lives, while other people feel that what they do has no real effect on what happens to them. Please use this scale where 1 means 'no choice at all' and 10 means 'a great deal of choice' to indicate how much freedom of choice and control you feel you have over the way your life turns out. Choose only one of the following options (e.g., 1, 2, 3, ...): 1. 1 2. 2 3. 3 4. 4 5. 5 6. 6 7. 7 8. 8 9. 9 10. 10",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q195",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "Do you think the death penalty can always be justified, never be justified, or something in between? Using this card on which 1 means 'Never justifiable' and 10 means 'Always justifiable' Choose only one of the following options (e.g., 1, 2, 3, ...): 1. 1 2. 2 3. 3 4. 4 5. 5 6. 6 7. 7 8. 8 9. 9 10. 10",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q50",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "How satisfied are you with the financial situation of your household? Using this card on which 1 means you are 'completely dissatisfied' and 10 means you are 'completely satisfied' Choose only one of the following options (e.g., 1, 2, 3, ...): 1. 1 2. 2 3. 3 4. 4 5. 5 6. 6 7. 7 8. 8 9. 9 10. 10",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q184",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "Do you think the abortion can always be justified, never be justified, or something in between? Using this card on which 1 means 'Never justifiable' and 10 means 'Always justifiable' Choose only one of the following options (e.g., 1, 2, 3, ...): 1. 1 2. 2 3. 3 4. 4 5. 5 6. 6 7. 7 8. 8 9. 9 10. 10",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": null
+  },
+  {
+    "id": "wvs_Q177",
+    "category": "opinion",
+    "source": "wvs",
+    "question": "Do you think that claiming government benefits to which you are not entitled can always be justified, never be justified, or something in between? Using this card on which 1 means 'Never justifiable' and 10 means 'Always justifiable' Choose only one of the following options (e.g., 1, 2, 3, ...): 1. 1 2. 2 3. 3 4. 4 5. 5 6. 6 7. 7 8. 8 9. 9 10. 10",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": null
+  }
+]

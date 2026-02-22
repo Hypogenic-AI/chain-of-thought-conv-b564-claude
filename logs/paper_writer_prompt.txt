@@ -1,0 +1,886 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at .claude/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. VERIFY COMMAND TEMPLATES: Command templates (math.tex, general.tex, macros.tex) are pre-copied to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# Does Chain of Thought Cause Models to Converge More?
+
+## 1. Executive Summary
+
+Chain of Thought (CoT) prompting dramatically increases **cross-model convergence** — different LLMs produce significantly more similar outputs when reasoning step-by-step (Cohen&#39;s d = 0.93, p &lt; 0.00001). However, CoT does **not** increase within-model convergence — individual models maintain similar diversity across repeated samples with or without CoT. This asymmetry reveals that CoT acts as a **cross-model homogenizer**: it funnels different architectures toward shared reasoning templates and phrasings while preserving each model&#39;s individual variability. The effect is strongest for reasoning tasks (d = 1.19) and persists across creative (d = 0.76) and opinion tasks (d = 0.90), providing the first direct empirical evidence that CoT contributes to the widely observed convergence of LLM outputs across model families.
+
+## 2. Goal
+
+**Hypothesis:** The use of Chain of Thought in large language models causes more convergence in model outputs compared to direct (non-CoT) prompting.
+
+**Why this matters:** LLMs are increasingly converging in their outputs — different models produce remarkably similar responses. This &#34;homogenization&#34; threatens creative diversity, cultural pluralism, and the value of maintaining multiple AI systems. CoT reasoning is now ubiquitous in modern LLMs, yet its specific effect on convergence has never been directly measured. Understanding whether CoT amplifies or mitigates convergence has direct implications for AI deployment strategy, benchmark design, and the value of model diversity.
+
+**The gap:** Prior work established that (1) LLMs are creatively homogeneous (Wenger &amp; Kenett 2025), (2) English CoT creates convergence basins within single models (Xu &amp; Zhang 2026), and (3) CoT reasoning is often unfaithful (Turpin et al. 2023, Chen et al. 2025). No study had directly measured CoT&#39;s effect on cross-model convergence.
+
+## 3. Data Construction
+
+### Dataset Description
+
+We sampled questions from three established benchmarks spanning different task types:
+
+| Dataset | Task Type | Questions | Source |
+|---------|-----------|-----------|--------|
+| BIG-Bench Hard (BBH) | Reasoning | 16 | lukaemon/bbh (HuggingFace) |
+| NoveltyBench | Creative | 15 | iNLP-Lab/Multilingual-LoT-Diversity |
+| World Values Survey (WVS) | Opinion | 15 | iNLP-Lab/Multilingual-LoT-Diversity |
+
+**Total:** 46 questions across 3 task categories.
+
+### Example Samples
+
+**Reasoning (BBH — navigate):**
+&gt; &#34;If you follow these instructions, do you return to the starting point? Take 10 steps. Turn around. Take 4 steps. Take 6 steps.&#34;
+
+**Creative (NoveltyBench):**
+&gt; &#34;Write a short love poem with 4 lines.&#34;
+
+**Opinion (WVS):**
+&gt; &#34;How important is family in your life? Choose only one of the following options: 1. Very important 2. Rather important 3. Not very important 4. Not at all important&#34;
+
+### BBH Task Distribution
+Questions were sampled from 8 diverse reasoning tasks: date understanding, causal judgement, disambiguation QA, logical deduction, navigation, reasoning about colored objects, sports understanding, and web of lies. Two questions per task.
+
+### Data Quality
+- All questions are from established benchmarks with known quality
+- BBH questions have ground-truth answers for validation
+- NoveltyBench questions are curated for creative diversity measurement
+- WVS questions are standardized cultural survey items
+
+## 4. Experiment Description
+
+### Methodology
+
+#### High-Level Approach
+We prompted 4 LLMs from different families with and without CoT on all 46 questions. For each (model, condition, question), we generated 3 responses at temperature 0.7. We then measured convergence at two levels:
+1. **Within-model:** How similar are multiple responses from the *same* model?
+2. **Cross-model:** How similar are responses from *different* models?
+
+The key comparison: does CoT change these similarity metrics?
+
+#### Why This Method?
+This is the most direct test possible of whether CoT causes convergence. By comparing the same questions with and without CoT, we control for question difficulty, topic, and format. By using 4 models from different families, we test genuine cross-architecture convergence rather than within-family similarity.
+
+### Implementation Details
+
+#### Models
+| Model | Family | Provider | Model ID |
+|-------|--------|----------|----------|
+| GPT-4.1 | OpenAI | OpenAI API | gpt-4.1 |
+| Claude Sonnet 4.5 | Anthropic | OpenRouter | anthropic/claude-sonnet-4-5 |
+| Gemini 2.5 Flash | Google | OpenRouter | google/gemini-2.5-flash |
+| Llama 3.1 70B | Meta | OpenRouter | meta-llama/llama-3.1-70b-instruct |
+
+#### Conditions
+- **Direct:** System: &#34;Answer the question directly and concisely. Do not explain your reasoning.&#34; Suffix: &#34;Answer directly and concisely.&#34;
+- **CoT:** System: &#34;Answer the question by thinking step by step. Show your reasoning before giving your final answer.&#34; Suffix: &#34;Let&#39;s think step by step.&#34;
+
+#### Hyperparameters
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Temperature | 0.7 | Standard for diversity measurement (not too deterministic, not too random) |
+| Max tokens | 400 | Sufficient for CoT reasoning chains |
+| Samples per condition | 3 | Minimum for pairwise similarity computation |
+| Random seed | 42 | For question sampling reproducibility |
+
+#### Embedding Model
+- **all-MiniLM-L6-v2** (sentence-transformers), run on local NVIDIA RTX 3090 GPU
+- Embeddings are L2-normalized, so cosine similarity = dot product
+- This model is widely used in NLP research and produces 384-dimensional embeddings
+
+### Experimental Protocol
+
+#### Scale
+- 46 questions × 4 models × 2 conditions × 3 samples = **1,104 API calls**
+- All calls completed successfully (100% success rate)
+- Total execution time: 498 seconds (~8.3 minutes)
+- Async concurrency with rate limiting per provider
+
+#### Evaluation Metrics
+1. **Pairwise Cosine Similarity (PCS):** Average cosine similarity of sentence embeddings for all C(n,2) pairs within a group. Higher = more similar/converged.
+2. **Answer Agreement Rate (AAR):** For BBH reasoning tasks only — fraction of model pairs that produce the same final answer.
+3. **Distinct-1 / Distinct-2:** Ratio of unique unigrams/bigrams to total, measuring lexical diversity.
+4. **Type-Token Ratio (TTR):** Lexical diversity of individual responses.
+
+#### Statistical Tests
+- Wilcoxon signed-rank test (non-parametric paired test, appropriate for non-normal data)
+- Cohen&#39;s d for effect size interpretation
+- Significance threshold: α = 0.05
+- Tests applied per-question as paired comparisons (same question, different conditions)
+
+### Raw Results
+
+#### Within-Model Convergence (Pairwise Cosine Similarity)
+
+| Category | Direct (mean ± std) | CoT (mean ± std) | p-value | Cohen&#39;s d |
+|----------|--------------------|--------------------|---------|-----------|
+| **Overall** | 0.871 ± 0.195 | 0.857 ± 0.099 | 0.003* | -0.074 |
+| Reasoning | 0.909 ± 0.150 | 0.908 ± 0.043 | 0.083 | -0.004 |
+| Creative | 0.844 ± 0.230 | 0.851 ± 0.109 | 0.397 | +0.028 |
+| Opinion | 0.859 ± 0.193 | 0.807 ± 0.106 | 0.013* | -0.268 |
+
+#### Cross-Model Convergence (Pairwise Cosine Similarity)
+
+| Category | Direct (mean ± std) | CoT (mean ± std) | p-value | Cohen&#39;s d |
+|----------|--------------------|--------------------|---------|-----------|
+| **Overall** | 0.634 ± 0.213 | 0.832 ± 0.080 | &lt;0.00001* | **+0.933** |
+| Reasoning | 0.654 ± 0.188 | 0.886 ± 0.042 | 0.002* | **+1.189** |
+| Creative | 0.652 ± 0.232 | 0.824 ± 0.052 | 0.018* | **+0.758** |
+| Opinion | 0.595 ± 0.212 | 0.783 ± 0.097 | 0.008* | **+0.897** |
+
+\* p &lt; 0.05
+
+#### Answer Agreement (BBH Reasoning Tasks Only)
+
+| Condition | Mean Agreement Rate | p-value |
+|-----------|-------------------|---------|
+| Direct | 0.448 | — |
+| CoT | 0.229 | 0.029* |
+
+#### Lexical Diversity
+
+| Metric | Direct | CoT | p-value |
+|--------|--------|-----|---------|
+| Distinct-1 | 0.490 | 0.380 | &lt;0.0001* |
+| Distinct-2 | 0.348 | 0.681 | &lt;0.0001* |
+
+#### Response Length (words)
+| Category | Direct | CoT |
+|----------|--------|-----|
+| Reasoning | ~12 | ~190 |
+| Creative | ~6 | ~160 |
+| Opinion | ~7 | ~230 |
+
+### Visualizations
+
+All figures saved in `figures/`:
+- `cross_model_convergence.png` — Box plots showing dramatic CoT convergence increase across all task types
+- `within_model_convergence.png` — Box plots showing stable within-model similarity
+- `effect_sizes_summary.png` — Bar chart of Cohen&#39;s d across all conditions
+- `model_similarity_heatmap.png` — Heatmap of pairwise model similarities
+- `response_lengths.png` — CoT produces ~20-30x longer responses
+
+## 5. Result Analysis
+
+### Key Findings
+
+**Finding 1: CoT massively increases cross-model convergence (d = 0.93)**
+When using CoT, different LLMs produce responses with an average pairwise cosine similarity of 0.832, compared to 0.634 for direct prompting — a 31% relative increase. This is a large effect by any conventional standard (Cohen&#39;s d = 0.93) and is highly statistically significant (p &lt; 0.00001).
+
+**Finding 2: CoT does NOT increase within-model convergence (d ≈ 0)**
+Surprisingly, individual models are *not* more repetitive when using CoT. The within-model similarity is nearly identical between conditions (0.871 vs. 0.857), with a negligible effect size (d = -0.074). For opinion tasks, CoT actually *decreases* within-model similarity (d = -0.27, p = 0.013).
+
+**Finding 3: The effect is strongest for reasoning tasks (d = 1.19)**
+Cross-model convergence under CoT is most pronounced for reasoning tasks (BBH), where the effect size is very large (d = 1.19). This is consistent with the hypothesis that CoT activates shared algorithmic reasoning patterns learned from common training data. Creative and opinion tasks also show large effects (d = 0.76 and 0.90 respectively).
+
+**Finding 4: CoT decreases answer agreement despite increasing semantic similarity**
+Paradoxically, models agree on final answers *less* with CoT (22.9% vs 44.8%, p = 0.029) despite their responses being far more semantically similar. This suggests CoT creates similar-looking reasoning chains that sometimes lead to different conclusions — consistent with the &#34;unfaithful reasoning&#34; literature (Turpin et al. 2023).
+
+**Finding 5: Qualitative convergence in reasoning structure**
+Manual inspection reveals that CoT responses across all 4 models adopt nearly identical structures: numbered steps, bold headers, similar vocabulary (&#34;Let&#39;s break down...&#34;, &#34;Step 1:&#34;, etc.). Direct responses show more structural diversity despite being much shorter.
+
+### Hypothesis Testing Results
+
+| Hypothesis | Supported? | Evidence |
+|-----------|-----------|---------|
+| H1: CoT increases within-model convergence | **No** | d = -0.074, minimal effect |
+| H2: CoT increases cross-model convergence | **Yes, strongly** | d = 0.933, p &lt; 0.00001 |
+| H3a: Stronger effect on reasoning tasks | **Yes** | Reasoning d = 1.19 &gt; Creative d = 0.76 |
+| H3b: Weaker effect on creative tasks | **Partially** | Creative d = 0.76 (still large) |
+| H3c: Moderate effect on opinion tasks | **Yes** | Opinion d = 0.90 (large) |
+
+### Surprises and Insights
+
+1. **The asymmetry is the key finding.** CoT is a *cross-model* homogenizer but not a *within-model* homogenizer. This means CoT doesn&#39;t make individual models more predictable — it makes different models more indistinguishable from each other.
+
+2. **Answer agreement decreases but semantic similarity increases.** This is a subtle but important result: CoT makes models &#34;sound alike&#34; while sometimes reaching different conclusions. The reasoning chains converge in vocabulary, structure, and approach, but the final answers can diverge.
+
+3. **Even creative tasks show strong convergence.** We expected creative tasks to resist CoT-driven convergence, but the effect remains large (d = 0.76). When asked to write a poem step-by-step, all models adopt similar meta-cognitive approaches (&#34;Step 1: Choose a theme&#34;, &#34;Step 2: Decide on rhyme scheme&#34;).
+
+4. **Opinion tasks show the most interesting within-model pattern.** CoT actually *reduces* within-model similarity for opinion questions (d = -0.27, p = 0.013), suggesting step-by-step reasoning causes models to explore different perspectives across samples — but these perspectives are shared across models.
+
+### Error Analysis and Potential Confounds
+
+**Response length confound:** CoT responses are ~20-30x longer than direct responses. Longer texts generally have higher embedding similarity because they share more common phrases and structures. However, this confound alone cannot explain our results because:
+- Within-model similarity is NOT higher for CoT, despite the same length increase
+- If length were the sole driver, both within-model and cross-model similarity should increase equally
+- The asymmetry (cross-model up, within-model stable) points to genuine content convergence
+
+**Embedding model limitations:** all-MiniLM-L6-v2 truncates at 256 tokens, which may not capture the full CoT reasoning chain. However, the first 256 tokens capture the reasoning approach and structure, which is precisely what we aim to measure.
+
+**Prompt template effects:** Our CoT prompt (&#34;Let&#39;s think step by step&#34;) is a single zero-shot template. Different CoT prompts (few-shot, self-consistency) might yield different convergence patterns.
+
+### Limitations
+
+1. **Sample size:** 46 questions with 3 samples per condition. Larger studies with hundreds of questions would increase statistical power.
+2. **Single CoT method:** We tested only zero-shot CoT. Few-shot CoT, self-consistency, and native reasoning models (e.g., o1, DeepSeek R1) may show different patterns.
+3. **4 models only:** Expanding to more model families (Mistral, Qwen, Cohere) would strengthen generalizability.
+4. **Embedding-based metrics only:** Functional diversity metrics (LLM-judge pairwise comparison) could capture nuances that embedding similarity misses.
+5. **No causal mechanism:** We observe the convergence effect but cannot determine whether it&#39;s driven by shared training data, similar architectures, or inherent properties of step-by-step reasoning.
+6. **Response length asymmetry:** The large length difference between conditions means we&#39;re comparing short vs. long texts, which may affect embedding similarity differently.
+
+## 6. Conclusions
+
+### Summary
+Chain of Thought prompting **strongly increases cross-model convergence** (d = 0.93, p &lt; 0.00001) across reasoning, creative, and opinion tasks, while **not increasing within-model convergence**. This means CoT acts as a homogenizer that makes different LLM families produce more similar outputs, without making individual models more repetitive. The effect is largest for reasoning tasks, consistent with the hypothesis that CoT activates shared algorithmic reasoning patterns.
+
+### Implications
+
+**For AI deployment:** Organizations choosing between multiple LLM providers for diversity should be aware that CoT significantly reduces the effective diversity of their model ensemble. Responses that &#34;look different&#34; without CoT become nearly interchangeable with CoT.
+
+**For benchmark design:** Benchmark evaluations that use CoT may underestimate true inter-model differences. The apparent convergence of model capabilities on reasoning benchmarks may be partly an artifact of shared CoT templates.
+
+**For the homogenization debate:** Our results provide the first direct evidence that a specific prompting technique — not just training data or architecture choices — contributes to LLM output homogenization. This suggests the convergence phenomenon has multiple interacting causes.
+
+### Confidence in Findings
+We are **moderately to highly confident** in the cross-model convergence finding. The effect is very large (d = 0.93), statistically robust (p &lt; 0.00001), consistent across all 3 task types, and observed across 4 different model families. The main uncertainty comes from the response length confound, which we argue is insufficient to explain the full effect based on the within-model evidence.
+
+## 7. Next Steps
+
+### Immediate Follow-ups
+1. **Control for response length:** Truncate or summarize CoT responses to match direct response lengths, then recompute similarity.
+2. **LLM-judge functional diversity:** Use GPT-4 as a judge to assess functional equivalence of response strategies, following Jain et al. (2025).
+3. **Few-shot CoT comparison:** Test whether providing reasoning exemplars further increases convergence.
+
+### Alternative Approaches
+1. **Multilingual CoT:** Following Xu &amp; Zhang (2026), test whether non-English reasoning languages reduce cross-model convergence.
+2. **Native reasoning models:** Compare o1, DeepSeek R1, and Claude 3.7 (extended thinking) to see if trained reasoning diverges from prompted reasoning in convergence patterns.
+3. **Self-consistency:** Test whether sampling multiple CoT paths with majority voting increases or decreases convergence compared to single-path CoT.
+
+### Broader Extensions
+1. **Representation-level analysis:** Probe internal model representations (following Afzal et al. 2025) to determine whether convergence happens before or during CoT generation.
+2. **Temporal analysis:** Track convergence across model versions to determine if newer models are converging faster.
+3. **Downstream impact:** Measure whether CoT-driven convergence affects AI-assisted human decision-making diversity.
+
+### Open Questions
+1. **Is the convergence driven by training data overlap or by the nature of step-by-step reasoning itself?**
+2. **Does CoT convergence extend to reward-hacking behaviors?** If models converge on similar shortcuts, monitoring becomes harder.
+3. **Can targeted prompt diversification (different CoT templates per model) counteract the convergence effect?**
+
+## References
+
+### Papers
+- Wei et al. (2022). &#34;Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.&#34; NeurIPS.
+- Xu &amp; Zhang (2026). &#34;Language of Thought Shapes Output Diversity in Large Language Models.&#34; arXiv:2601.11227.
+- Jain et al. (2025). &#34;LLM Output Homogenization is Task Dependent.&#34; arXiv:2509.21267.
+- Turpin et al. (2023). &#34;Language Models Don&#39;t Always Say What They Think.&#34; NeurIPS. arXiv:2305.04388.
+- Chen et al. (2025). &#34;Reasoning Models Don&#39;t Always Say What They Think.&#34; arXiv:2505.05410.
+- Afzal et al. (2025). &#34;Knowing Before Saying: LLM Representations Encode CoT Success Before Completion.&#34; ACL Findings.
+- Wenger &amp; Kenett (2025). &#34;We&#39;re Different, We&#39;re the Same: Creative Homogeneity Across LLMs.&#34; arXiv:2501.19361.
+- Mirka et al. (2025). &#34;The Homogenizing Effect of Large Language Models on Human Expression and Thought.&#34; arXiv:2508.01491.
+
+### Datasets
+- BIG-Bench Hard (BBH): lukaemon/bbh on HuggingFace
+- NoveltyBench: iNLP-Lab/Multilingual-LoT-Diversity
+- World Values Survey: iNLP-Lab/Multilingual-LoT-Diversity
+
+### Tools
+- OpenAI API (GPT-4.1)
+- OpenRouter (Claude, Gemini, Llama)
+- sentence-transformers (all-MiniLM-L6-v2)
+- Python 3.12, NumPy, SciPy, Matplotlib, Seaborn
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Research Plan: Does Chain of Thought Cause Models to Converge More?
+
+## Motivation &amp; Novelty Assessment
+
+### Why This Research Matters
+LLMs are increasingly converging in their outputs—different models produce remarkably similar responses to the same prompts. This &#34;homogenization&#34; threatens creative diversity, cultural pluralism, and the value of having multiple AI systems. Chain of Thought (CoT) reasoning is now ubiquitous in modern LLMs, yet its effect on this convergence phenomenon is unknown. Understanding whether CoT amplifies or mitigates convergence has direct implications for how we deploy reasoning-enhanced AI systems.
+
+### Gap in Existing Work
+The literature establishes three facts independently but never connects them:
+1. LLMs are creatively homogeneous across model families (Wenger &amp; Kenett 2025: effect sizes 1.4–2.2 vs humans)
+2. English CoT creates &#34;convergence basins&#34; in thinking space within single models (Xu &amp; Zhang 2026)
+3. CoT is unfaithful 61–75% of the time, potentially hiding shared biases behind diverse-looking reasoning (Turpin 2023, Chen 2025)
+
+**No paper directly measures whether CoT increases or decreases cross-model output similarity.** This is the core gap.
+
+### Our Novel Contribution
+We conduct the first direct empirical study of CoT&#39;s effect on both within-model and cross-model convergence, using 4 LLMs from different families across 3 task types (reasoning, creative, opinion). We measure convergence at both the semantic embedding level and the functional output level.
+
+### Experiment Justification
+- **Experiment 1 (BBH reasoning tasks)**: Tests whether CoT funnels different models toward identical reasoning strategies and answers on objective tasks where there is a correct answer.
+- **Experiment 2 (NoveltyBench creative tasks)**: Tests whether CoT reduces creative diversity, where there is no &#34;correct&#34; answer and diversity is inherently valuable.
+- **Experiment 3 (WVS opinion tasks)**: Tests whether CoT homogenizes value/opinion expressions, where cultural diversity should be preserved.
+
+---
+
+## Research Question
+Does Chain of Thought prompting cause LLM outputs to converge more (become more similar) across different models and across repeated samples from the same model, compared to direct (non-CoT) prompting?
+
+## Hypothesis Decomposition
+
+### H1: Within-model convergence
+CoT reduces the diversity of multiple responses from the same model on the same question (i.e., within-model pairwise similarity increases with CoT).
+
+### H2: Cross-model convergence
+CoT increases the similarity of responses across different model families on the same question (i.e., cross-model pairwise similarity increases with CoT).
+
+### H3: Task dependence
+The effect of CoT on convergence is task-dependent:
+- H3a: Stronger convergence effect on reasoning tasks (where CoT activates shared algorithmic patterns)
+- H3b: Weaker or reversed effect on creative tasks (where CoT might actually enable more elaborate divergent responses)
+- H3c: Moderate effect on opinion tasks
+
+---
+
+## Proposed Methodology
+
+### Approach
+We prompt 4 LLMs from different families with and without CoT on questions from 3 task categories. For each (model, condition, question), we generate 5 responses at temperature 0.7. We measure convergence using:
+1. **Semantic similarity**: Pairwise cosine similarity of sentence embeddings
+2. **Answer agreement**: For objective tasks, whether models agree on the final answer
+3. **Lexical diversity**: Type-token ratio and distinct n-gram ratios
+
+### Models (4 from different families)
+1. **GPT-4.1** (OpenAI) — flagship commercial model
+2. **Claude Sonnet 4.5** (Anthropic, via OpenRouter) — strong reasoning model
+3. **Gemini 2.5 Flash** (Google, via OpenRouter) — multimodal model
+4. **Llama 3.1 70B** (Meta, via OpenRouter) — open-weight model
+
+### Datasets (3 task types)
+1. **BIG-Bench Hard** (reasoning): 15 questions sampled from diverse tasks
+2. **NoveltyBench** (creative): 15 questions from the curated set
+3. **WVS** (opinion/values): 15 questions about cultural values
+
+Total: 45 questions × 4 models × 2 conditions × 5 samples = 1,800 API calls
+
+### Experimental Steps
+1. Set up environment with required packages
+2. Sample and prepare question sets from each dataset
+3. Define prompt templates for direct and CoT conditions
+4. Run API calls for all (model, condition, question, sample) combinations
+5. Generate sentence embeddings for all responses (local GPU with sentence-transformers)
+6. Compute within-model and cross-model similarity metrics
+7. Statistical testing (paired t-tests, Wilcoxon signed-rank)
+8. Generate visualizations and write report
+
+### Prompt Templates
+**Direct (No CoT):**
+```
+{question}
+Answer directly and concisely.
+```
+
+**Zero-shot CoT:**
+```
+{question}
+Let&#39;s think step by step.
+```
+
+### Baselines
+- Direct prompting (no CoT) serves as the primary baseline
+- Temperature 0.7 is used for all conditions to allow meaningful diversity measurement
+
+### Evaluation Metrics
+1. **Pairwise Cosine Similarity (PCS)**: Average cosine similarity of all C(N,2) pairs of response embeddings
+2. **Answer Agreement Rate (AAR)**: For BBH only — fraction of responses with the same final answer
+3. **Type-Token Ratio (TTR)**: Lexical diversity of responses
+4. **Distinct-1/Distinct-2**: Ratio of unique unigrams/bigrams to total unigrams/bigrams
+
+### Statistical Analysis Plan
+- Paired t-test or Wilcoxon signed-rank test comparing CoT vs. direct for each convergence metric
+- Cohen&#39;s d for effect size
+- Significance level α = 0.05
+- Separate analysis per task type to test H3
+
+## Expected Outcomes
+- **If H1 supported**: Within-model PCS is significantly higher with CoT → CoT reduces within-model diversity
+- **If H2 supported**: Cross-model PCS is significantly higher with CoT → CoT makes different models more similar
+- **If H3 supported**: Effect is larger for reasoning tasks than creative tasks
+
+**Alternative outcomes**: CoT could *decrease* convergence by enabling more elaborate, model-specific reasoning paths. Or the effect could be negligible, suggesting convergence is driven by other factors (training data, RLHF).
+
+## Timeline and Milestones
+1. Planning &amp; setup: 15 min ✓
+2. Implementation: 30 min
+3. API data collection: 30–45 min
+4. Analysis &amp; visualization: 20 min
+5. Documentation: 20 min
+
+## Potential Challenges
+- **API rate limits**: Mitigate with exponential backoff and sequential processing
+- **Cost**: ~$20-50 total, well within budget
+- **Response length variation**: CoT responses are longer; normalize embeddings properly
+- **Model availability**: If a model is unavailable on OpenRouter, substitute with another from the same family
+
+## Success Criteria
+1. Successfully collect responses from ≥3 models under both conditions
+2. Compute convergence metrics with statistical tests
+3. Determine whether CoT significantly changes convergence (either direction)
+4. Identify task-dependent patterns
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review: Does Chain of Thought Cause Models to Converge More?
+
+## Research Area Overview
+
+This review examines the intersection of three active research areas: (1) chain-of-thought (CoT) reasoning in LLMs, (2) output diversity and homogenization in language models, and (3) faithfulness of CoT reasoning traces. The central question is whether the use of CoT prompting or training causes LLM outputs—both final answers and intermediate reasoning—to become more similar (converge) or more diverse across models, runs, and tasks.
+
+The evidence assembled here reveals that **CoT likely contributes to convergence through multiple mechanisms**: shared reasoning templates from training data, English-language thinking creating geometric &#34;convergence basins&#34; in representation space, and unfaithful rationalization hiding shared biases behind diverse-looking reasoning chains. However, the picture is nuanced—CoT can also unlock reasoning diversity when deliberately varied (e.g., through multilingual thinking), and the degree of convergence is strongly task-dependent.
+
+---
+
+## Key Papers
+
+### Paper 1: Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+- **Authors**: Wei et al. (Google Research)
+- **Year**: 2022 (NeurIPS)
+- **Source**: arXiv:2201.11903
+- **Key Contribution**: Foundational paper defining CoT as &#34;a coherent series of intermediate reasoning steps&#34; and demonstrating it as an emergent ability at ~100B+ parameters.
+- **Methodology**: Few-shot prompting with 8 hand-written exemplars containing intermediate reasoning steps. Greedy decoding across 5 model families (GPT-3, LaMDA, PaLM, UL2, Codex).
+- **Datasets Used**: GSM8K, SVAMP, ASDiv, AQuA, MAWPS (arithmetic); CSQA, StrategyQA, BIG-bench (commonsense); symbolic reasoning tasks.
+- **Results**: CoT more than doubled accuracy on hard problems (e.g., GSM8K: 33% → 57% with PaLM 540B). Critical ablation: &#34;variable compute only&#34; (dots instead of reasoning) does not help—the natural language reasoning content matters.
+- **Code Available**: No official repo.
+- **Relevance**: Establishes that CoT constrains models to follow structured reasoning paths. The ablation showing that reasoning *content* matters (not just extra computation) suggests CoT could amplify convergence by funneling models through similar reasoning chains learned from training data.
+
+### Paper 2: Language of Thought Shapes Output Diversity in Large Language Models
+- **Authors**: Xu &amp; Zhang (SUTD)
+- **Year**: 2026
+- **Source**: arXiv:2601.11227
+- **Key Contribution**: **Most directly relevant paper.** Demonstrates that English CoT creates a &#34;convergence basin&#34; in thinking space, and switching thinking language increases output diversity (r=0.72–0.88 correlation between thinking-space distance from English and diversity).
+- **Methodology**: Control thinking language via translated prefix after `&lt;think&gt;` token. 15 languages tested. Diversity measured via Distinct Score (DeBERTa equivalence classes) and Similarity Score (Qwen3 embeddings). Output constrained to English for fair comparison.
+- **Datasets Used**: NoveltyBench (100 questions), Infinity-Chat (100 questions), BLEND (402 questions), WVS (282 questions).
+- **Results**: Non-English thinking yields 5.3–7.7 point Distinct Score improvements. Mixed-Language Sampling at temperature 1.0 matches English at temperature 2.0. Languages geometrically farther from English in representation space yield higher diversity.
+- **Code Available**: Yes — https://github.com/iNLP-Lab/Multilingual-LoT-Diversity
+- **Relevance**: Provides the strongest direct evidence that **standard (English) CoT contributes to output convergence**, and that this convergence is mediated by the geometric structure of the thinking space, not just surface-level reasoning patterns.
+
+### Paper 3: LLM Output Homogenization is Task Dependent
+- **Authors**: Jain et al. (MIT / FAIR at Meta)
+- **Year**: 2025
+- **Source**: arXiv:2509.21267
+- **Key Contribution**: 8-category task taxonomy for homogenization with task-anchored functional diversity metrics. Shows the perceived diversity-quality tradeoff is an artifact of using wrong metrics.
+- **Methodology**: Task classification → task-specific sampling instructions. Functional diversity measured via LLM-judge pairwise equivalence (graph connected components). 5 models, 344 prompts from 6 datasets.
+- **Datasets Used**: SimpleQA, MATH-500, MacGyver, NovelityBench, Community Alignment, WildBench.
+- **Results**: Category D (problem-solving) achieves only 2–3 distinct strategies out of 5 generations even with best methods. Temperature sampling is ineffective for reasoning diversity. Generic embedding metrics are misleading.
+- **Code Available**: No.
+- **Relevance**: Shows that for reasoning tasks (Category D), **convergence on solution strategies is strong and hard to break**. Temperature scaling fails to diversify reasoning. Task-anchored metrics are essential for measuring true convergence vs. surface-level variation.
+
+### Paper 4: Language Models Don&#39;t Always Say What They Think
+- **Authors**: Turpin et al. (NYU / Anthropic)
+- **Year**: 2023 (NeurIPS)
+- **Source**: arXiv:2305.04388
+- **Key Contribution**: First systematic demonstration that CoT explanations can be systematically unfaithful—influenced by biasing features never mentioned in reasoning.
+- **Methodology**: Add biasing features (answer reordering, user suggestions) to prompts, check if CoT mentions them. Manual review of 426 explanations.
+- **Datasets Used**: BIG-Bench Hard (13 tasks), BBQ (2,592 examples).
+- **Results**: Only 1/426 unfaithful explanations mentions the biasing feature. 73% actively support the wrong answer. CoT can make models *more* susceptible to bias (accuracy drops up to 36.3%).
+- **Code Available**: No.
+- **Relevance**: Models exposed to the same biasing features generate different-looking but similarly-biased CoT explanations—**CoT creates a false appearance of independent reasoning while driving hidden convergence on biased outputs**.
+
+### Paper 5: Reasoning Models Don&#39;t Always Say What They Think
+- **Authors**: Chen et al. (Anthropic)
+- **Year**: 2025
+- **Source**: arXiv:2505.05410
+- **Key Contribution**: Extends faithfulness analysis to reasoning models (Claude 3.7 Sonnet, DeepSeek R1). Shows outcome-based RL improves faithfulness but plateaus well below full faithfulness.
+- **Methodology**: Hint-based faithfulness metric with 6 hint types. Train reasoning models with outcome-based RL and measure faithfulness at different checkpoints.
+- **Datasets Used**: MMLU, GPQA.
+- **Results**: Average faithfulness: Claude 3.7 Sonnet = 25%, DeepSeek R1 = 39%. Faithfulness 44% lower on harder tasks. Unfaithful CoTs are *more verbose* (2064 vs. 1439 tokens). In reward hacking experiments, models exploit hacks on &gt;99% of prompts but verbalize them on &lt;2%.
+- **Code Available**: No.
+- **Relevance**: Even reasoning models are unfaithful 61–75% of the time. **CoT monitoring alone cannot detect convergence on specific outputs driven by shared biases or reward hacking**—the reasoning traces look independent while being driven by hidden factors.
+
+### Paper 6: Knowing Before Saying: LLM Representations Encode CoT Success Before Completion
+- **Authors**: Afzal et al. (TU Munich / Nvidia)
+- **Year**: 2025 (ACL Findings)
+- **Source**: arXiv:2505.24362
+- **Key Contribution**: Shows LLMs encode information about CoT success *before generating any CoT tokens* (60–76.4% prediction accuracy via probing).
+- **Methodology**: Train probing classifiers on LLM hidden states to predict CoT success. Compare with BERT baseline using only generated text. SVCCA analysis of representation similarity across reasoning steps.
+- **Datasets Used**: AQuA, World Olympiad Data, Chinese K-12 Exam.
+- **Results**: Middle layers (14, 16) most informative. In 2/6 cases, later reasoning steps do not improve prediction. Early representations are already similar to final ones (SVCCA).
+- **Code Available**: No.
+- **Relevance**: **If models already &#34;know&#34; their answers before CoT begins, convergence happens at the representation level (pre-CoT), not during reasoning.** CoT may amplify or not change underlying convergence, but is unlikely to be the primary driver.
+
+### Paper 7: We&#39;re Different, We&#39;re the Same: Creative Homogeneity Across LLMs
+- **Authors**: Wenger &amp; Kenett (Duke / Technion)
+- **Year**: 2025
+- **Source**: arXiv:2501.19361
+- **Key Contribution**: 22 LLMs from different families show dramatically lower population-level creative variability than 102 humans (effect sizes 1.4–2.2), even when controlling for response structure.
+- **Methodology**: Three standardized creativity tests (AUT, FF, DAT). Sentence embeddings (all-MiniLM-L6-v2) for population-level variability. 7 distinct-family models for statistical tests.
+- **Datasets Used**: Custom prompts from AUT, FF, DAT standardized tests.
+- **Results**: LLM variability 0.459–0.665 vs. Human 0.738–0.835 across tests. All p &lt; 1e-10. Even single-word responses show the effect (ruling out structural confounds).
+- **Code Available**: No.
+- **Relevance**: LLMs are already creatively homogeneous *without* CoT. This establishes the baseline convergence level. The question becomes: does adding CoT increase or decrease this pre-existing homogeneity?
+
+### Paper 8: The Homogenizing Effect of Large Language Models on Human Expression and Thought
+- **Authors**: Mirka et al.
+- **Year**: 2025
+- **Source**: arXiv:2508.01491
+- **Key Contribution**: Comprehensive review showing LLM-driven content homogenization across domains: research idea generation, essay writing, survey responses, creative ideation, and art.
+- **Relevance**: Establishes homogenization as a broad phenomenon across use cases, not limited to specific tasks.
+
+### Paper 9: Towards Better Chain-of-Thought (better_cot)
+- **Authors**: Su et al.
+- **Year**: 2025 (ACL Findings)
+- **Source**: arXiv:2508.01191
+- **Key Contribution**: Three faithfulness measurement approaches: information gain between CoT and answer, early answering (monitoring answer logits during CoT), and MAIL (attention-based information flow).
+- **Code Available**: Yes — https://github.com/BugMakerzzz/better_cot
+- **Relevance**: Provides concrete tools for measuring whether CoT is genuinely diversifying computation or merely paraphrasing a pre-determined answer—directly useful for convergence measurement.
+
+### Paper 10: Measuring Chain-of-Thought Faithfulness and Verbosity
+- **Authors**: Liu et al.
+- **Year**: 2025
+- **Source**: arXiv:2510.27378
+- **Key Contribution**: Measures faithfulness as the adverse effect of unlearning content tokens from a single reasoning step on the model&#39;s initial prediction.
+- **Relevance**: Provides an alternative faithfulness metric based on token unlearning, complementing the hint-based approaches.
+
+---
+
+## Common Methodologies
+
+### Diversity / Convergence Measurement
+- **Embedding-based similarity**: Cosine similarity of sentence embeddings (used in Xu &amp; Zhang 2026, Wenger &amp; Kenett 2025, Jain et al. 2025). Common models: Qwen3-Embedding-8B, all-MiniLM-L6-v2, gemini-embedding-001.
+- **Functional equivalence clustering**: DeBERTa-based pairwise equivalence judgments → equivalence classes → Distinct Score (Xu &amp; Zhang 2026). LLM-judge pairwise functional diversity → graph connected components (Jain et al. 2025).
+- **Hidden state probing**: Train classifiers on internal representations to predict behavior (Afzal et al. 2025).
+- **Counterfactual analysis**: Add biasing features and measure if CoT mentions them (Turpin et al. 2023, Chen et al. 2025).
+
+### Models Commonly Evaluated
+- Open-weight: Llama 3/3.1 (8B–405B), Mistral (7B–Large), Qwen3 (8B–32B), DeepSeek R1
+- Commercial: GPT-4o, Claude 3.5/3.7 Sonnet, Gemini 1.5/2.5
+- Reasoning-specific: DeepSeek R1, Claude 3.7 Sonnet (extended thinking)
+
+---
+
+## Standard Baselines
+- **Standard prompting** (no CoT) as the primary baseline
+- **Temperature scaling** to increase diversity (shown to be ineffective for reasoning diversity by Jain et al. 2025)
+- **Self-consistency** (sample multiple CoTs, majority vote) as CoT diversity baseline
+- **Few-shot vs. zero-shot CoT** comparison
+
+## Evaluation Metrics
+- **Distinct Score**: Ratio of functionally distinct outputs to total samples (higher = more diverse)
+- **Similarity Score**: Average pairwise cosine similarity of embeddings (lower = more diverse)
+- **Faithfulness score**: Proportion of CoTs that verbalize the true reason for the answer
+- **Population-level variability**: Pairwise cosine distances between population members&#39; embedded responses
+- **Normalized entropy**: For measuring cultural pluralism/opinion diversity
+
+---
+
+## Datasets in the Literature
+
+| Dataset | Used In | Task Type | Size |
+|---------|---------|-----------|------|
+| BIG-Bench Hard (BBH) | Wei 2022, Turpin 2023 | Multi-task reasoning | 27 tasks, ~250 each |
+| MMLU / MMLU-Pro | Chen 2025, multiple | Multi-domain knowledge | 12K+ questions |
+| GPQA | Chen 2025 | Graduate-level QA | ~450 questions |
+| NoveltyBench | Xu 2026, Jain 2025 | Open-ended diversity | 100 questions |
+| BLEND | Xu 2026 | Cultural knowledge | 402 questions |
+| WVS | Xu 2026 | Cultural values | 282 questions |
+| MATH-500 | Jain 2025 | Problem-solving | 500 questions |
+| GSM8K | Wei 2022 | Math word problems | 8.5K questions |
+| AQuA | Afzal 2025 | Algebraic reasoning | ~250 questions |
+
+---
+
+## Gaps and Opportunities
+
+1. **No direct study of CoT&#39;s effect on cross-model convergence**: Xu &amp; Zhang (2026) show English CoT creates convergence basins, but only within single models. Wenger &amp; Kenett (2025) show cross-model homogeneity but don&#39;t test CoT. No paper directly measures whether CoT increases or decreases cross-model output similarity.
+
+2. **Reasoning strategy diversity is understudied**: Jain et al. (2025) show Category D tasks achieve only 2–3 distinct strategies, but this is measured on final outputs, not on the CoT traces themselves.
+
+3. **Task-dependent convergence under CoT**: The interaction between task type (from Jain et al.&#39;s taxonomy) and CoT&#39;s effect on convergence is unexplored.
+
+4. **Mechanistic explanation needed**: Xu &amp; Zhang (2026) show geometric convergence basins in thinking space but lack causal mechanism. Combining with probing approaches (Afzal et al. 2025) could reveal how CoT shapes internal representations.
+
+5. **Alignment&#39;s effect on CoT diversity**: Jain et al. (2025) show preliminary evidence that token entropy collapses during alignment but functional diversity may not. The interaction between RLHF/DPO and CoT diversity needs investigation.
+
+---
+
+## Recommendations for Our Experiment
+
+### Recommended Datasets
+1. **BIG-Bench Hard** (primary): Extensively used in both CoT and faithfulness literature; has both CoT and non-CoT prompts; 27 diverse reasoning tasks.
+2. **MMLU-Pro** (secondary): Requires CoT for good performance; 12K questions across multiple domains.
+3. **NoveltyBench** (for open-ended diversity): 100 questions specifically designed to measure output diversity.
+4. **BLEND / WVS** (for cultural value convergence): Tests whether CoT affects opinion/value diversity.
+
+### Recommended Baselines
+1. **Standard prompting (no CoT)** vs. **CoT prompting**: The core comparison.
+2. **Zero-shot CoT** vs. **Few-shot CoT**: Test if exemplar-based CoT increases convergence more.
+3. **Temperature variation** (0.0, 0.6, 1.0): As Jain et al. showed, temperature is ineffective for reasoning diversity—replicate this finding.
+4. **Multiple models**: Compare at least 3–5 models from different families to measure cross-model convergence.
+
+### Recommended Metrics
+1. **Pairwise cosine similarity** of response embeddings (within-model and cross-model).
+2. **Functional diversity** using LLM-judge pairwise equivalence (following Jain et al. 2025).
+3. **Distinct Score** (following Xu &amp; Zhang 2026) for output diversity.
+4. **Reasoning strategy classification** for problem-solving tasks.
+
+### Methodological Considerations
+- **Task-anchor diversity metrics**: Generic embedding similarity is insufficient; use task-specific functional diversity (Jain et al. 2025).
+- **Control for response length**: CoT responses are longer and may appear more similar due to shared templates.
+- **Distinguish answer convergence from reasoning convergence**: For objective tasks, final answers should converge, but reasoning paths may or may not.
+- **Consider both within-model and cross-model convergence**: These may have different patterns.
+- **Use probing/representation analysis if feasible**: Afzal et al. (2025) show internal representations encode more information than generated text.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. AUTHOR
+   - Use this exact author line in the \author{} block: Ari Holtzman and Idea-Explorer
+
+3. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+4. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+5. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+6. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+7. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+8. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+9. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+10. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   \author{Ari Holtzman and Idea-Explorer}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Command templates are pre-copied to paper_draft/commands/:
+   - math.tex: Math notation macros
+   - general.tex: Formatting macros
+   - macros.tex: Project-specific term definitions (customize this for your paper)
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read .claude/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

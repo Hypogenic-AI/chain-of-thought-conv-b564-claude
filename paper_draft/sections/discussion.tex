@@ -1,0 +1,40 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Why Does CoT Homogenize Across Models but Not Within?}
+\label{sec:why}
+
+The central puzzle of our results is the asymmetry: CoT increases cross-model similarity without increasing within-model similarity. We consider three potential explanations.
+
+\para{Shared reasoning templates.} All four models were likely trained on overlapping corpora that contain similar step-by-step reasoning patterns---math textbooks, programming tutorials, educational materials. When prompted to reason step by step, models draw on these shared templates, producing structurally similar outputs. Within a single model, however, the stochastic sampling process (temperature 0.7) introduces variation that is orthogonal to the template structure, preserving within-model diversity.
+
+\para{Response length effects.} CoT responses are 20--30$\times$ longer than direct responses (e.g., $\sim$190 vs.\ $\sim$12 words for reasoning tasks). Longer texts share more common phrases and structural elements, which could inflate embedding similarity. However, this explanation alone is insufficient: if length were the sole driver, \emph{both} within-model and cross-model similarity should increase equally. The fact that only cross-model similarity increases suggests genuine content convergence beyond what length alone would predict.
+
+\para{Convergence in reasoning structure, not content.} Manual inspection of responses reveals that CoT outputs across all four models adopt nearly identical structures: numbered steps, bold headers, similar transition phrases (``Let's break this down,'' ``Step 1:''). Direct responses, despite being much shorter, show more structural diversity---some models use bullet points, others give terse answers, others provide brief explanations. CoT appears to impose a shared \emph{format} that sentence embeddings capture as high similarity.
+
+\subsection{The Answer Agreement Paradox}
+\label{sec:paradox}
+
+Our finding that CoT decreases answer agreement (44.8\% $\to$ 22.9\%) despite increasing semantic similarity deserves careful interpretation. We see two potential explanations. First, the longer CoT reasoning chains may introduce more opportunities for errors to compound---small differences in intermediate steps can lead to different conclusions even when the overall reasoning approach is similar. Second, this pattern is consistent with the unfaithful CoT literature~\citep{turpin2023language,chen2025reasoning}: if models arrive at answers through internal computations that differ from their stated reasoning, the convergence of reasoning traces need not imply convergence of answers.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+\para{Sample size.} Our study uses 46 questions with 3 samples per condition. While the effect sizes are large and consistent, studies with hundreds of questions would provide greater statistical power and enable finer-grained analysis by task type.
+
+\para{Single CoT variant.} We test only zero-shot CoT (``Let's think step by step''). Few-shot CoT, self-consistency decoding, and native reasoning models (\eg OpenAI o1, DeepSeek R1) may show different convergence patterns. In particular, models trained with reasoning-specific RL may have learned to produce more diverse reasoning paths than prompted CoT.
+
+\para{Four models.} Expanding to additional model families (Mistral, Qwen, Cohere, DeepSeek) would strengthen the generalizability of our findings. Our current selection covers the four largest model families but does not include smaller or more specialized models.
+
+\para{Embedding-based metrics.} Sentence embeddings capture semantic similarity but may miss functional differences that matter in practice. An LLM-judge approach~\citep{jain2025homogenization} that evaluates whether two responses are \emph{functionally equivalent} (i.e., would lead to the same downstream decisions) could reveal nuances that embedding similarity misses. Additionally, our embedding model (\textsc{all-MiniLM-L6-v2}) truncates at 256 tokens, which may not capture the full extent of long CoT reasoning chains.
+
+\para{Causal claims.} While we observe that CoT increases cross-model convergence, we cannot fully determine the causal mechanism. The convergence could be driven by shared training data, by inherent properties of step-by-step reasoning, or by the specific prompt template we use. Disentangling these factors requires additional experiments, such as varying prompt templates or testing on models with known non-overlapping training data.
+
+\subsection{Implications}
+\label{sec:implications}
+
+\para{For AI deployment.} Organizations that rely on multiple LLM providers for diversity---for example, generating multiple candidate solutions and selecting among them---should be aware that CoT significantly reduces the effective diversity of their model ensemble. Under direct prompting, models produce meaningfully different responses; under CoT, the responses become nearly interchangeable.
+
+\para{For benchmark design.} Evaluations that use CoT may underestimate true inter-model differences. If two models achieve similar scores on a reasoning benchmark with CoT, this may reflect convergent reasoning templates rather than equivalent underlying capabilities. Benchmarks designed to measure model diversity should consider evaluating under both direct and CoT conditions.
+
+\para{For the homogenization debate.} Our results provide the first evidence that a specific, modifiable prompting practice---rather than just training data overlap or architectural choices---contributes to LLM output homogenization. This suggests that the convergence phenomenon has multiple interacting causes, and that some degree of homogenization may be reversible by changing how we prompt models.

@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We present the first direct empirical study of Chain of Thought prompting's effect on cross-model output convergence. By prompting four LLMs from different families with and without CoT across 46 questions spanning reasoning, creative, and opinion tasks, we find that CoT acts as a \emph{cross-model homogenizer}: it dramatically increases the similarity of outputs across model families (Cohen's $d = 0.93$, $p < 0.00001$) while not increasing within-model repetitiveness ($d = -0.074$). The effect is strongest for reasoning tasks ($d = 1.19$) and persists even for creative and opinion tasks ($d = 0.76$ and $d = 0.90$, respectively).
+
+The key takeaway is that CoT makes different models sound alike without making any individual model more predictable---it narrows the space between models while preserving each model's internal variability.
+
+Future work should control for response length by truncating CoT outputs, test additional CoT variants (few-shot, self-consistency, native reasoning models), expand to more model families, and employ functional diversity metrics beyond embedding similarity. Most importantly, understanding \emph{why} CoT homogenizes---whether through shared training data, inherent properties of step-by-step reasoning, or prompt template effects---would inform strategies for preserving model diversity in an era of ubiquitous reasoning.
